@@ -23,35 +23,28 @@ public class Platform2DTest extends Sprite
 		this.platform2D = new Platform2D(.98);
 		
 		var gap:Number = 50;
-		var left:Point = new Point(0, 300);
-		var right:Point = new Point(200, 350);
+		var left:Point = new Point(0, 100);
+		var right:Point = new Point(200, 150);
 		var fVo:FloorVo = this.platform2D.createFloor(left, right);
-		var foor:Sprite = new Floor();
-		foor.x = left.x;
-		foor.y = left.y;
-		foor.width = this.platform2D.getFloorLength(fVo);
-		foor.rotation = this.platform2D.getRotation(fVo);
-		this.addChild(foor);
+		var floor:Sprite = new Floor();
+		floor.x = left.x;
+		floor.y = left.y;
+		floor.width = this.platform2D.getFloorDistance(fVo);
+		floor.rotation = this.platform2D.getRotation(fVo);
+		this.addChild(floor);
 		
-		left = new Point(200, 350);
-		right = new Point(400, 250);
-		fVo = this.platform2D.createFloor(left, right);
-		foor = new Floor();
-		foor.x = left.x;
-		foor.y = left.y;
-		foor.width = this.platform2D.getFloorLength(fVo);
-		foor.rotation = this.platform2D.getRotation(fVo);
-		this.addChild(foor);
-		
-		left = new Point(200, 350);
-		right = new Point(400, 450);
-		fVo = this.platform2D.createFloor(left, right);
-		foor = new Floor();
-		foor.x = left.x;
-		foor.y = left.y;
-		foor.width = this.platform2D.getFloorLength(fVo);
-		foor.rotation = this.platform2D.getRotation(fVo);
-		this.addChild(foor);
+		var floorList:Array = this.platform2D.createFloorChain(0, 300, 100, [0, 20, 0, 30, -40, 0, 60]);
+		var length:int = floorList.length;
+		for (var i:int = 0; i < length; i += 1)
+		{
+			fVo = floorList[i];
+			floor = new Floor();
+			floor.x = fVo.left.x;
+			floor.y = fVo.left.y;
+			floor.width = this.platform2D.getFloorDistance(fVo);
+			floor.rotation = this.platform2D.getRotation(fVo);
+			this.addChild(floor);
+		}
 		
 		this.role = new Role();
 		this.addChild(this.role);
@@ -103,9 +96,9 @@ public class Platform2DTest extends Sprite
 	
 	private function onKeyDownHandler(event:KeyboardEvent):void 
 	{
-		if (event.keyCode == Keyboard.A) this.roleVo.vx = -2;
-		else if (event.keyCode == Keyboard.D) this.roleVo.vx = 2;
-		else if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -15);
+		if (event.keyCode == Keyboard.A) this.roleVo.vx = -5;
+		else if (event.keyCode == Keyboard.D) this.roleVo.vx = 5;
+		else if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -20);
 		else if (event.keyCode == Keyboard.R) this.reset();
 	}
 	
@@ -117,6 +110,5 @@ public class Platform2DTest extends Sprite
 		this.roleVo.x = 150;
 		this.roleVo.y = 100;
 	}
-	
 }
 }

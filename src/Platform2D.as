@@ -18,6 +18,9 @@ public class Platform2D
 	private var _bodyList:Array;
 	//地板链接之间的最小距离
 	private const distance = 3;
+	/**
+	 * @param	gravity		全局重力
+	 */
 	public function Platform2D(gravity:Number) 
 	{
 		this.g = gravity;
@@ -44,16 +47,19 @@ public class Platform2D
 		var length:int = this.floorList.length;
 		var fVo:FloorVo;
 		var floorY:Number;
+		var prevY:Number;
 		for (var i:int = 0; i < length; i += 1)
 		{
 			fVo = this.floorList[i];
 			//判断x坐标是否在这个地板之内
-			if (!this.isOutSide(bodyVo, fVo))
+			if (!this.isOutSide(bodyVo.x, fVo))
 			{
-				if (fVo.slope == 0) floorY = fVo.left.y;
-				else floorY = this.getFloorTopY(fVo, bodyVo.x);
-				//上一帧的位置在 地板y坐标上面，下一帧在地板y坐标下面 则表示是能够接触到的地板。
-				if (bodyVo.prevY < floorY && bodyVo.y >= floorY)
+				//根据body的prevX求出prevY。
+				prevY = this.getFloorTopY(fVo, bodyVo.prevX);
+				//当前body的x求出当前应该掉落在floor上的floorY。
+				floorY = this.getFloorTopY(fVo, bodyVo.x);
+				//上一个帧在 地板y坐标上面，下一帧在地板y坐标下面 则表示是能够接触到的地板。
+				if (bodyVo.prevY <= prevY && bodyVo.y >= floorY)
 				{
 					bodyVo.vy = 0;
 					bodyVo.y = floorY;
@@ -73,8 +79,8 @@ public class Platform2D
 	{
 		//是往左还是往右
 		var isLeft:Boolean;
-		if (bodyVo.x + bodyVo.width * .5 < prevFloor.left.x) isLeft = true;
-		else if (bodyVo.x - bodyVo.width * .5 > prevFloor.right.x) isLeft = false;
+		if (bodyVo.x < prevFloor.left.x) isLeft = true;
+		else if (bodyVo.x > prevFloor.right.x) isLeft = false;
 		var length:int = this.floorList.length;
 		var fVo:FloorVo;
 		//上一次地板的坐标
@@ -96,7 +102,7 @@ public class Platform2D
 			if (fVo != prevFloor)
 			{
 				//在x范围内
-				if (!this.isOutSide(bodyVo, fVo))
+				if (!this.isOutSide(bodyVo.x, fVo))
 				{
 					//如果是往左出边界则获取新的地板的右坐标。
 					if (isLeft) newPoint = fVo.right;
@@ -192,7 +198,7 @@ public class Platform2D
 	 * @param	floorVo		地板数据
 	 * @return	地板长度
 	 */
-	public function getFloorLength(floorVo:FloorVo):Number
+	public function getFloorDistance(floorVo:FloorVo):Number
 	{
 		if (!floorVo) return NaN;
 		return MathUtil.distance(floorVo.left.x, floorVo.left.y, 
@@ -230,15 +236,16 @@ public class Platform2D
 	
 	/**
 	 * 判断x坐标是否在地板的x范围之内
-	 * @param	bodyVo			刚体数据
+	 * @param	posX			当前x位置
 	 * @param	floorVo			地板数据
+	 * @param	offset			误差
 	 * @return	是否在范围之内
 	 */
-	public function isOutSide(bodyVo:BodyVo, floorVo:FloorVo, offset:Number = .1):Boolean
+	public function isOutSide(posX:Number, floorVo:FloorVo, offset:Number = .5):Boolean
 	{
 		if (!floorVo) return false;
-		return bodyVo.x + bodyVo.width * .5 < floorVo.left.x - offset || 
-				bodyVo.x - bodyVo.width * .5 > floorVo.right.x + offset;
+		return posX < floorVo.left.x - offset || 
+				posX > floorVo.right.x + offset;
 	}
 	
 	/**
@@ -266,7 +273,7 @@ public class Platform2D
 				//获取在斜面上移动时的y坐标
 				bodyVo.y = this.getFloorTopY(bodyVo.floor, bodyVo.x);
 				//判断是否出界
-				if (this.isOutSide(bodyVo, bodyVo.floor)) 
+				if (this.isOutSide(bodyVo.x, bodyVo.floor)) 
 					bodyVo.floor = this.linkFloor(bodyVo, bodyVo.floor);
 			}
 		}
@@ -287,14 +294,47 @@ public class Platform2D
 	
 	/**
 	 * 跳跃
-	 * @param	bodyVo	
-	 * @param	vy
+	 * @param	bodyVo	刚体数据
+	 * @param	vy		跳跃速度
 	 */
 	public function jump(bodyVo:BodyVo, vy:Number = 0):void
 	{
 		if (!bodyVo || !bodyVo.floor) return;
 		this.moveBody(bodyVo, bodyVo.vx, vy);
 		bodyVo.floor = null;
+	}
+	
+	/**
+	 * 创建一连串地板
+	 * @param	x			起始x坐标
+	 * @param	y			起始y坐标
+	 * @param	distance	地板的长度
+	 * @param	angleList	地板的坡度列表（存放的是角度值）
+	 * @return	地板列表
+	 */
+	public function createFloorChain(x:Number, y:Number, distance:Number, angleList:Array):Array
+	{
+		var floorList:Array = [];
+		var fVo:FloorVo;
+		var left:Point;
+		var right:Point;
+		var length:int = angleList.length;
+		//弧度
+		var degrees:Number;
+		var posX:Number;
+		var posY:Number;
+		for (var i:int = 0; i < length; i += 1) 
+		{
+			if (i > 0) left = right.clone();
+			else left = new Point(x, y);
+			degrees = MathUtil.dgs2rds(angleList[i]);
+			posX = left.x + Math.cos(degrees) * distance;
+			posY = left.y + Math.sin(degrees) * distance;
+			right = new Point(posX, posY);
+			fVo = this.createFloor(left, right);
+			floorList.push(fVo);
+		}
+		return floorList;
 	}
 	
 	/**
