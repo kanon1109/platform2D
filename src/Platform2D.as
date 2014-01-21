@@ -140,6 +140,7 @@ public class Platform2D
 								leftBlock:Boolean = false, 
 								rightBlock:Boolean = false):FloorVo
 	{
+		if (!this.floorList) return null;
 		var floorVo:FloorVo = new FloorVo();
 		floorVo.left = left;
 		floorVo.right = right;
@@ -163,7 +164,7 @@ public class Platform2D
 	 */
 	public function createBody(x:Number, y:Number, width:Number = 0, height:Number = 0, userData:*= null):BodyVo
 	{
-		if (this._bodyList.indexOf(bodyVo) != -1) return null;
+		if (!this._bodyList || this._bodyList.indexOf(bodyVo) != -1) return null;
 		var bodyVo:BodyVo = new BodyVo();
 		bodyVo.vx = 0;
 		bodyVo.vy = 0;
@@ -253,6 +254,7 @@ public class Platform2D
 	 */
 	public function update():void
 	{
+		if (!this._bodyList) return;
 		var length:int = this._bodyList.length;
 		var bodyVo:BodyVo;
 		for (var i:int = 0; i < length; i += 1) 

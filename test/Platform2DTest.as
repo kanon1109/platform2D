@@ -74,6 +74,7 @@ public class Platform2DTest extends Sprite
 	 */
 	private function render():void
 	{
+		if (!this.platform2D.bodyList) return;
 		var length:int = this.platform2D.bodyList.length;
 		var bVo:BodyVo;
 		for (var i:int = 0; i < length; i += 1)
@@ -100,6 +101,7 @@ public class Platform2DTest extends Sprite
 		else if (event.keyCode == Keyboard.D) this.roleVo.vx = 5;
 		else if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -20);
 		else if (event.keyCode == Keyboard.R) this.reset();
+		else if (event.keyCode == Keyboard.Q) this.platform2D.distroy();
 	}
 	
 	/**
