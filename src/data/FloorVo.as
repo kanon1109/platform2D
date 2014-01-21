@@ -13,5 +13,9 @@ public class FloorVo
 	public var left:Point;
 	/**右边位置坐标*/
 	public var right:Point;
+	/**左边阻碍*/
+	public var leftBlock:Boolean;
+	/**右边阻碍*/
+	public var rightBlock:Boolean;
 }
 }

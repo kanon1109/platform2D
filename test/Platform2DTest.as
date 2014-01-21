@@ -33,7 +33,7 @@ public class Platform2DTest extends Sprite
 		foor.rotation = this.platform2D.getRotation(fVo);
 		this.addChild(foor);
 		
-		left = new Point(200, 300);
+		left = new Point(200, 350);
 		right = new Point(400, 250);
 		fVo = this.platform2D.createFloor(left, right);
 		foor = new Floor();
@@ -43,6 +43,15 @@ public class Platform2DTest extends Sprite
 		foor.rotation = this.platform2D.getRotation(fVo);
 		this.addChild(foor);
 		
+		left = new Point(200, 350);
+		right = new Point(400, 450);
+		fVo = this.platform2D.createFloor(left, right);
+		foor = new Floor();
+		foor.x = left.x;
+		foor.y = left.y;
+		foor.width = this.platform2D.getFloorLength(fVo);
+		foor.rotation = this.platform2D.getRotation(fVo);
+		this.addChild(foor);
 		
 		this.role = new Role();
 		this.addChild(this.role);

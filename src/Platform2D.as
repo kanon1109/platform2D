@@ -16,6 +16,8 @@ public class Platform2D
 	private var floorList:Array;
 	//刚体列表
 	private var _bodyList:Array;
+	//地板链接之间的最小距离
+	private const distance = 3;
 	public function Platform2D(gravity:Number) 
 	{
 		this.g = gravity;
@@ -63,30 +65,80 @@ public class Platform2D
 	}
 	
 	/**
-	 * 链接地板
+	 * 链接到另一个地板
 	 * @param	bodyVo		刚体
 	 * @param	prevFloor	上一次的地板
 	 */
-	private function linkFloor(bodyVo:BodyVo, prevFloor:FloorVo):void
+	private function linkFloor(bodyVo:BodyVo, prevFloor:FloorVo):FloorVo
 	{
+		//是往左还是往右
 		var isLeft:Boolean;
 		if (bodyVo.x + bodyVo.width * .5 < prevFloor.left.x) isLeft = true;
 		else if (bodyVo.x - bodyVo.width * .5 > prevFloor.right.x) isLeft = false;
-		
+		var length:int = this.floorList.length;
+		var fVo:FloorVo;
+		//上一次地板的坐标
+		var prevPoint:Point;
+		if (isLeft) prevPoint = prevFloor.left;
+		else prevPoint = prevFloor.right;
+		//新的地标坐标
+		var newPoint:Point;
+		//新的地标数据
+		var newFloor:FloorVo;
+		//上下坡位置有加成权重
+		var offsetY:Number = 0;
+		//最大高度 用于找到允许连接的地板内最小高度的地板
+		var topY:Number = Infinity;
+		for (var i:int = 0; i < length; i += 1)
+		{
+			fVo = this.floorList[i];
+			//不是上一次的地步
+			if (fVo != prevFloor)
+			{
+				//在x范围内
+				if (!this.isOutSide(bodyVo, fVo))
+				{
+					//如果是往左出边界则获取新的地板的右坐标。
+					if (isLeft) newPoint = fVo.right;
+					else newPoint = fVo.left;
+					//如果是斜面 上坡比下坡
+					if (fVo.slope > 0) offsetY = -.5; //下坡
+					else if (fVo.slope < 0) offsetY = .5; //上坡
+					//找到2个地板链接处距离小于最短距离并且y坐标高度最小的
+					if (Point.distance(prevPoint, newPoint) <= this.distance)
+					{
+						//找到所有（地板Y坐标+offsetY）的值中最小的跳出循环。
+						if (topY > newPoint.y + offsetY)
+						{
+							topY = newPoint.y + offsetY;
+							newFloor = fVo;
+						}
+						else break;
+					}
+				}
+			}
+		}
+		return newFloor;
 	}
 	
 	//************************public function************************
 	/**
 	 * 创建一个地板
-	 * @param	left	左边坐标
-	 * @param	right	右边坐标
+	 * @param	left		左边坐标
+	 * @param	right		右边坐标
+	 * @param	leftBlock	左边阻碍
+	 * @param	rightBlock	右边阻碍
 	 * @return	被创建的地板数据
 	 */
-	public function createFloor(left:Point, right:Point):FloorVo
+	public function createFloor(left:Point, right:Point, 
+								leftBlock:Boolean = false, 
+								rightBlock:Boolean = false):FloorVo
 	{
 		var floorVo:FloorVo = new FloorVo();
 		floorVo.left = left;
 		floorVo.right = right;
+		floorVo.leftBlock = leftBlock;
+		floorVo.rightBlock = rightBlock;
 		//不是水平的则计算斜率
 		if (right.y != left.y) floorVo.slope = MathUtil.getSlope(right.x, right.y, left.x, left.y);
 		else floorVo.slope = 0;
@@ -215,10 +267,7 @@ public class Platform2D
 				bodyVo.y = this.getFloorTopY(bodyVo.floor, bodyVo.x);
 				//判断是否出界
 				if (this.isOutSide(bodyVo, bodyVo.floor)) 
-				{
-					this.linkFloor(bodyVo, bodyVo.floor);
-					bodyVo.floor = null;
-				}
+					bodyVo.floor = this.linkFloor(bodyVo, bodyVo.floor);
 			}
 		}
 	}
