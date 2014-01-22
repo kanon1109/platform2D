@@ -1,4 +1,4 @@
-package data
+﻿package data
 {
 import flash.geom.Point;
 /**
@@ -13,9 +13,9 @@ public class FloorVo
 	public var left:Point;
 	/**右边位置坐标*/
 	public var right:Point;
-	/**左边阻碍*/
-	public var leftBlock:Boolean;
-	/**右边阻碍*/
-	public var rightBlock:Boolean;
+	/**左边阻碍高度*/
+	public var lBlockHeight:Number;
+	/**右边阻碍高度*/
+	public var rBlockHeight:Number;
 }
 }

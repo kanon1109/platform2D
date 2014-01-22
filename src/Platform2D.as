@@ -52,7 +52,7 @@ public class Platform2D
 		{
 			fVo = this.floorList[i];
 			//判断x坐标是否在这个地板之内
-			if (!this.isOutSide(bodyVo.x, fVo))
+			if (!this.isOutSide(bodyVo, fVo))
 			{
 				//根据body的prevX求出prevY。
 				prevY = this.getFloorTopY(fVo, bodyVo.prevX);
@@ -102,7 +102,7 @@ public class Platform2D
 			if (fVo != prevFloor)
 			{
 				//在x范围内
-				if (!this.isOutSide(bodyVo.x, fVo))
+				if (!this.isOutSide(bodyVo, fVo))
 				{
 					//如果是往左出边界则获取新的地板的右坐标。
 					if (isLeft) newPoint = fVo.right;
@@ -127,25 +127,46 @@ public class Platform2D
 		return newFloor;
 	}
 	
+	/**
+	 * 地板锁定人物
+	 * @param	bodyVo 舞台数据
+	 */
+	private function blockBody(bodyVo:BodyVo):void
+	{
+		if (bodyVo.floor)
+		{
+			if (bodyVo.y >= bodyVo.floor.rBlockHeight && 
+				bodyVo.x + bodyVo.width * .5 > bodyVo.floor.right.x)
+				bodyVo.x = bodyVo.floor.right.x - bodyVo.width * .5;
+			else if (bodyVo.y >= bodyVo.floor.lBlockHeight && 
+					bodyVo.x - bodyVo.width * .5 < bodyVo.floor.left.x)
+					bodyVo.x = bodyVo.floor.left.x + bodyVo.width * .5;
+		}
+		else
+		{
+			
+		}
+	}
+	
 	//************************public function************************
 	/**
 	 * 创建一个地板
-	 * @param	left		左边坐标
-	 * @param	right		右边坐标
-	 * @param	leftBlock	左边阻碍
-	 * @param	rightBlock	右边阻碍
+	 * @param	left			左边坐标
+	 * @param	right			右边坐标
+	 * @param	lBlockHeight	左边阻碍高度
+	 * @param	rBlockHeight	右边阻碍高度
 	 * @return	被创建的地板数据
 	 */
 	public function createFloor(left:Point, right:Point, 
-								leftBlock:Boolean = false, 
-								rightBlock:Boolean = false):FloorVo
+								lBlockHeight:Number = 0, 
+								rBlockHeight:Number = 0):FloorVo
 	{
 		if (!this.floorList) return null;
 		var floorVo:FloorVo = new FloorVo();
 		floorVo.left = left;
 		floorVo.right = right;
-		floorVo.leftBlock = leftBlock;
-		floorVo.rightBlock = rightBlock;
+		floorVo.lBlockHeight = lBlockHeight;
+		floorVo.rBlockHeight = rBlockHeight;
 		//不是水平的则计算斜率
 		if (right.y != left.y) floorVo.slope = MathUtil.getSlope(right.x, right.y, left.x, left.y);
 		else floorVo.slope = 0;
@@ -237,16 +258,27 @@ public class Platform2D
 	
 	/**
 	 * 判断x坐标是否在地板的x范围之内
-	 * @param	posX			当前x位置
-	 * @param	floorVo			地板数据
-	 * @param	offset			误差
+	 * @param	bodyVo				刚体数据
+	 * @param	floorVo				地板数据
+	 * @param	offset				误差
+	 * @param	checkFloorHeight	是否对floor进行高度判断
 	 * @return	是否在范围之内
 	 */
-	public function isOutSide(posX:Number, floorVo:FloorVo, offset:Number = .5):Boolean
+	public function isOutSide(bodyVo:BodyVo, floorVo:FloorVo, offset:Number = .5, checkFloorHeight:Boolean=false):Boolean
 	{
 		if (!floorVo) return false;
-		return posX < floorVo.left.x - offset || 
-				posX > floorVo.right.x + offset;
+		if (!checkFloorHeight)
+		{
+			return bodyVo.x < floorVo.left.x - offset || bodyVo.x > floorVo.right.x + offset;
+		}
+		else
+		{
+			if (bodyVo.x < floorVo.left.x - offset && 
+				bodyVo.y < floorVo.lBlockHeight) return true;//出左边界
+			else if (bodyVo.x > floorVo.right.x + offset && 
+					bodyVo.y < floorVo.rBlockHeight) return true;//出右边界
+		}
+		return false;
 	}
 	
 	/**
@@ -263,6 +295,7 @@ public class Platform2D
 			bodyVo.prevX = bodyVo.x;
 			bodyVo.prevY = bodyVo.y;
 			bodyVo.x += bodyVo.vx;
+			this.blockBody(bodyVo);
 			if (!bodyVo.floor)
 			{
 				//如果没有地板则搜索，设置重力效果
@@ -275,7 +308,7 @@ public class Platform2D
 				//获取在斜面上移动时的y坐标
 				bodyVo.y = this.getFloorTopY(bodyVo.floor, bodyVo.x);
 				//判断是否出界
-				if (this.isOutSide(bodyVo.x, bodyVo.floor)) 
+				if (this.isOutSide(bodyVo, bodyVo.floor))
 					bodyVo.floor = this.linkFloor(bodyVo, bodyVo.floor);
 			}
 		}
