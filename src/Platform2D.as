@@ -133,14 +133,20 @@ public class Platform2D
 	 */
 	private function blockBody(bodyVo:BodyVo):void
 	{
+		var lHeightY:Number;
+		var rHeightY:Number;
 		if (bodyVo.floor)
 		{
-			if (bodyVo.y >= bodyVo.floor.rBlockHeight && 
-				bodyVo.x + bodyVo.width * .5 > bodyVo.floor.right.x)
-				bodyVo.x = bodyVo.floor.right.x - bodyVo.width * .5;
-			else if (bodyVo.y >= bodyVo.floor.lBlockHeight && 
-					bodyVo.x - bodyVo.width * .5 < bodyVo.floor.left.x)
-					bodyVo.x = bodyVo.floor.left.x + bodyVo.width * .5;
+			lHeightY = bodyVo.floor.left.y - bodyVo.floor.lBlockHeight;
+			rHeightY = bodyVo.floor.right.y - bodyVo.floor.rBlockHeight;
+			if (bodyVo.floor.lBlockHeight > 0 && 
+				bodyVo.y > lHeightY && 
+				bodyVo.x - bodyVo.width * .5 < bodyVo.floor.left.x)
+				bodyVo.x = bodyVo.floor.left.x + bodyVo.width * .5;
+			else if (bodyVo.floor.rBlockHeight > 0 && 
+					bodyVo.y > rHeightY && 
+					bodyVo.x + bodyVo.width * .5 > bodyVo.floor.right.x)
+					bodyVo.x = bodyVo.floor.right.x - bodyVo.width * .5;
 		}
 		else
 		{
@@ -165,6 +171,8 @@ public class Platform2D
 		var floorVo:FloorVo = new FloorVo();
 		floorVo.left = left;
 		floorVo.right = right;
+		if (lBlockHeight < 0) lBlockHeight = 0;
+		if (rBlockHeight < 0) rBlockHeight = 0;
 		floorVo.lBlockHeight = lBlockHeight;
 		floorVo.rBlockHeight = rBlockHeight;
 		//不是水平的则计算斜率
