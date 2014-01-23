@@ -366,9 +366,14 @@ public class Platform2D
 	 * @param	bodyVo	物体数据
 	 * @param	p		物体跳跃速度减量百分比（0-1），越大跳跃速度下降的就越慢。
 	 */
-	public function releaseJump(bodyVo:BodyVo, p:Number = .2):void
+	public function releaseJump(bodyVo:BodyVo, p:Number = .3):void
 	{
-		if (bodyVo) bodyVo.vy *= p;
+		if (bodyVo) 
+		{
+			if (p < 0) p = 0;
+			else if (p > 1) p = 1;
+			bodyVo.vy *= p;
+		}
 	}
 	
 	/**

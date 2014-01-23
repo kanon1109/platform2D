@@ -115,7 +115,7 @@ public class Platform2DTest extends Sprite
 		else if (event.keyCode == Keyboard.D) this.roleVo.vx = 5;
 		else if (event.keyCode == Keyboard.R) this.reset();
 		else if (event.keyCode == Keyboard.Q) this.platform2D.distroy();
-		else if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -13);
+		if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -13);
 	}
 	
 	/**
