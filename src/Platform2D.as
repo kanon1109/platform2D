@@ -14,7 +14,7 @@ public class Platform2D
 	private var g:Number;
 	//地板列表
 	private var floorList:Array;
-	//刚体列表
+	//物体列表
 	private var _bodyList:Array;
 	//地板链接之间的最小距离
 	private const distance = 3;
@@ -38,7 +38,7 @@ public class Platform2D
 	
 	/**
 	 * 搜索地面
-	 * @param	bodyVo	刚体数据
+	 * @param	bodyVo	物体数据
 	 */
 	private function seachFloor(bodyVo:BodyVo):void
 	{
@@ -72,7 +72,7 @@ public class Platform2D
 	
 	/**
 	 * 链接到另一个地板
-	 * @param	bodyVo		刚体
+	 * @param	bodyVo		物体
 	 * @param	prevFloor	上一次的地板
 	 */
 	private function linkFloor(bodyVo:BodyVo, prevFloor:FloorVo):FloorVo
@@ -197,13 +197,13 @@ public class Platform2D
 	}
 	
 	/**
-	 * 创建刚体
+	 * 创建物体
 	 * @param	x				x坐标
 	 * @param	y				y坐标
 	 * @param	width			宽度
 	 * @param	height			高度
 	 * @param	userData		用户数据
-	 * @return	刚体数据
+	 * @return	物体数据
 	 */
 	public function createBody(x:Number, y:Number, width:Number = 0, height:Number = 0, userData:*= null):BodyVo
 	{
@@ -280,7 +280,7 @@ public class Platform2D
 	
 	/**
 	 * 判断x坐标是否在地板的x范围之内
-	 * @param	bodyVo				刚体数据
+	 * @param	bodyVo				物体数据
 	 * @param	floorVo				地板数据
 	 * @param	offset				误差
 	 * @param	checkFloorHeight	是否对floor进行高度判断
@@ -337,8 +337,8 @@ public class Platform2D
 	}
 	
 	/**
-	 * 移动某个刚体
-	 * @param	bodyVo	刚体数据
+	 * 移动某个物体
+	 * @param	bodyVo	物体数据
 	 * @param	vx		横向速度
 	 * @param	vy		纵向速度
 	 */
@@ -351,7 +351,7 @@ public class Platform2D
 	
 	/**
 	 * 跳跃
-	 * @param	bodyVo	刚体数据
+	 * @param	bodyVo	物体数据
 	 * @param	vy		跳跃速度
 	 */
 	public function jump(bodyVo:BodyVo, vy:Number = 0):void
@@ -359,6 +359,16 @@ public class Platform2D
 		if (!bodyVo || !bodyVo.floor) return;
 		this.moveBody(bodyVo, bodyVo.vx, vy);
 		bodyVo.floor = null;
+	}
+	
+	/**
+	 * 释放跳跃
+	 * @param	bodyVo	物体数据
+	 * @param	p		物体跳跃速度减量百分比（0-1），越大跳跃速度下降的就越慢。
+	 */
+	public function releaseJump(bodyVo:BodyVo, p:Number = .2):void
+	{
+		if (bodyVo) bodyVo.vy *= p;
 	}
 	
 	/**
@@ -472,7 +482,7 @@ public class Platform2D
 	}
 	
 	/**
-	 * 刚体列表
+	 * 物体列表
 	 */
 	public function get bodyList():Array { return _bodyList; };
 }

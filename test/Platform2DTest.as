@@ -20,7 +20,7 @@ public class Platform2DTest extends Sprite
 	private var roleVo:BodyVo;
 	public function Platform2DTest() 
 	{
-		this.platform2D = new Platform2D(.98);
+		this.platform2D = new Platform2D(.8);
 		
 		var gap:Number = 50;
 		var left:Point = new Point(0, 10);
@@ -105,17 +105,17 @@ public class Platform2DTest extends Sprite
 	private function onKeyUpHandler(event:KeyboardEvent):void 
 	{
 		if (event.keyCode == Keyboard.A || 
-			event.keyCode == Keyboard.D)
-			this.roleVo.vx = 0;
+			event.keyCode == Keyboard.D) this.roleVo.vx = 0;
+		else if (event.keyCode == Keyboard.SPACE) this.platform2D.releaseJump(this.roleVo);
 	}
 	
 	private function onKeyDownHandler(event:KeyboardEvent):void 
 	{
 		if (event.keyCode == Keyboard.A) this.roleVo.vx = -5;
 		else if (event.keyCode == Keyboard.D) this.roleVo.vx = 5;
-		else if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -15);
 		else if (event.keyCode == Keyboard.R) this.reset();
 		else if (event.keyCode == Keyboard.Q) this.platform2D.distroy();
+		else if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -13);
 	}
 	
 	/**
