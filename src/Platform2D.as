@@ -128,31 +128,45 @@ public class Platform2D
 	}
 	
 	/**
-	 * 地板锁定人物
-	 * @param	bodyVo 舞台数据
+	 * 判断地板锁定物体
+	 * @param	bodyVo 物体数据
 	 */
-	private function blockBody(bodyVo:BodyVo):void
+	private function checkBlock(bodyVo:BodyVo):void
 	{
-		var lHeightY:Number;
-		var rHeightY:Number;
-		if (bodyVo.floor)
+		if (!bodyVo.floor)
 		{
-			lHeightY = bodyVo.floor.left.y - bodyVo.floor.lBlockHeight;
-			rHeightY = bodyVo.floor.right.y - bodyVo.floor.rBlockHeight;
-			if (bodyVo.floor.lBlockHeight > 0 && 
-				bodyVo.y > lHeightY && 
-				bodyVo.x - bodyVo.width * .5 < bodyVo.floor.left.x)
-				bodyVo.x = bodyVo.floor.left.x + bodyVo.width * .5;
-			else if (bodyVo.floor.rBlockHeight > 0 && 
-					bodyVo.y > rHeightY && 
-					bodyVo.x + bodyVo.width * .5 > bodyVo.floor.right.x)
-					bodyVo.x = bodyVo.floor.right.x - bodyVo.width * .5;
+			var fVo:FloorVo;
+			var length:int = this.floorList.length;
+			for (var i:int = 0; i < length; i += 1)
+			{
+				fVo = this.floorList[i];
+				if (!this.isOutSide(bodyVo, fVo))
+					this.blockFloor(bodyVo, fVo);
+			}
 		}
-		else
-		{
-			
-		}
+		else this.blockFloor(bodyVo, bodyVo.floor);
 	}
+
+	/**
+	 * 地板锁定物体
+	 * @param	bodyVo			物体数据
+	 * @param	floorVo			地板数据
+	 */
+	private function blockFloor(bodyVo:BodyVo, floorVo:FloorVo):void
+	{
+		if (!bodyVo || !floorVo) return; 
+		var lHeightY:Number = floorVo.left.y - floorVo.lBlockHeight;
+		var rHeightY:Number = floorVo.right.y - floorVo.rBlockHeight;
+		if (floorVo.lBlockHeight > 0 && 
+			bodyVo.y > lHeightY && 
+			bodyVo.x - bodyVo.width * .5 < floorVo.left.x)
+			bodyVo.x = floorVo.left.x + bodyVo.width * .5;
+		else if (floorVo.rBlockHeight > 0 && 
+				bodyVo.y > rHeightY && 
+				bodyVo.x + bodyVo.width * .5 > floorVo.right.x)
+				bodyVo.x = floorVo.right.x - bodyVo.width * .5;
+	}
+	
 	
 	//************************public function************************
 	/**
@@ -272,7 +286,7 @@ public class Platform2D
 	 * @param	checkFloorHeight	是否对floor进行高度判断
 	 * @return	是否在范围之内
 	 */
-	public function isOutSide(bodyVo:BodyVo, floorVo:FloorVo, offset:Number = .5, checkFloorHeight:Boolean=false):Boolean
+	public function isOutSide(bodyVo:BodyVo, floorVo:FloorVo, offset:Number = 1, checkFloorHeight:Boolean=false):Boolean
 	{
 		if (!floorVo) return false;
 		if (!checkFloorHeight)
@@ -303,7 +317,7 @@ public class Platform2D
 			bodyVo.prevX = bodyVo.x;
 			bodyVo.prevY = bodyVo.y;
 			bodyVo.x += bodyVo.vx;
-			this.blockBody(bodyVo);
+			this.checkBlock(bodyVo);
 			if (!bodyVo.floor)
 			{
 				//如果没有地板则搜索，设置重力效果
@@ -349,10 +363,10 @@ public class Platform2D
 	
 	/**
 	 * 创建一连串地板
-	 * @param	x			起始x坐标
-	 * @param	y			起始y坐标
-	 * @param	distance	地板的长度
-	 * @param	angleList	地板的坡度列表（存放的是角度值）
+	 * @param	x				起始x坐标
+	 * @param	y				起始y坐标
+	 * @param	distance		地板的长度
+	 * @param	angleList		地板的坡度列表（存放的是角度值）
 	 * @return	地板列表
 	 */
 	public function createFloorChain(x:Number, y:Number, distance:Number, angleList:Array):Array
@@ -362,8 +376,7 @@ public class Platform2D
 		var left:Point;
 		var right:Point;
 		var length:int = angleList.length;
-		//弧度
-		var degrees:Number;
+		var degrees:Number;//弧度
 		var posX:Number;
 		var posY:Number;
 		for (var i:int = 0; i < length; i += 1) 
@@ -375,6 +388,75 @@ public class Platform2D
 			posY = left.y + Math.sin(degrees) * distance;
 			right = new Point(posX, posY);
 			fVo = this.createFloor(left, right);
+			floorList.push(fVo);
+		}
+		return floorList;
+	}
+	
+	/**
+	 * 创建阶梯式的地板
+	 * @param	x				起始x坐标
+	 * @param	y				起始y坐标
+	 * @param	distance		地板的长度	
+	 * @param	angleList		地板的坡度列表（存放的是角度值）
+	 * @param	heightList		地板阻碍高度[-10, 10, 0] 负数为向上的高度，正数为向下，0为无高度。
+	 * @return	地板列表
+	 */
+	public function createLadderFloor(x:Number, y:Number, distance:Number, 
+									angleList:Array, heightList:Array):Array
+	{
+		var floorList:Array = [];
+		var fVo:FloorVo;
+		var length:int = angleList.length;
+		var left:Point; 
+		var right:Point;
+		var lBlockHeight:Number = 0;
+		var rBlockHeight:Number = 0;
+		var degrees:Number;//弧度
+		var height:Number = 0;
+		var prevHeight:Number = 0;
+		var posX:Number;
+		var posY:Number;
+		for (var i:int = 0; i < length; i += 1)
+		{
+			degrees = MathUtil.dgs2rds(angleList[i]);
+			//大于0 为向下，小于0为向上
+			height = heightList[i];
+			lBlockHeight = 0;
+			rBlockHeight = 0;
+			if (i == 0) 
+			{
+				left = new Point(x, y);
+			}
+			else
+			{
+				if (prevHeight > 0)
+				{
+					//如果上一个线段的右侧锁定高度向下
+					left = right.clone();
+					left.y += prevHeight;
+					lBlockHeight = prevHeight;
+				}
+				else if (prevHeight < 0)
+				{
+					//如果上一个线段的右侧锁定高度向上
+					left = right.clone();
+					left.y += prevHeight;
+				}
+				else
+				{
+					left = right.clone(); //没有高度
+				}
+			}
+			posX = left.x + Math.cos(degrees) * distance;
+			posY = left.y + Math.sin(degrees) * distance;
+			right = new Point(posX, posY);
+			
+			if (height >= 0) rBlockHeight = 0; //线段右边高度如果大于0则 不设置右边锁定高度
+			else if (height < 0) rBlockHeight = Math.abs(height); //线段的右边如果 高度小于0 则设置右边锁定高度
+			
+			prevHeight = height;
+			fVo = this.createFloor(left, right, lBlockHeight, rBlockHeight);
 			floorList.push(fVo);
 		}
 		return floorList;

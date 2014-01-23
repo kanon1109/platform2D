@@ -23,8 +23,8 @@ public class Platform2DTest extends Sprite
 		this.platform2D = new Platform2D(.98);
 		
 		var gap:Number = 50;
-		var left:Point = new Point(0, 100);
-		var right:Point = new Point(200, 150);
+		var left:Point = new Point(0, 10);
+		var right:Point = new Point(200, 60);
 		var fVo:FloorVo = this.platform2D.createFloor(left, right);
 		var floor:Sprite = new Floor();
 		floor.x = left.x;
@@ -36,6 +36,20 @@ public class Platform2DTest extends Sprite
 		var floorList:Array = this.platform2D.createFloorChain(0, 300, 100, [0, 20, 0, 30, -40, 0, 60]);
 		var length:int = floorList.length;
 		for (var i:int = 0; i < length; i += 1)
+		{
+			fVo = floorList[i];
+			floor = new Floor();
+			floor.x = fVo.left.x;
+			floor.y = fVo.left.y;
+			floor.width = this.platform2D.getFloorDistance(fVo);
+			floor.rotation = this.platform2D.getRotation(fVo);
+			this.addChild(floor);
+		}
+		
+		floorList = this.platform2D.createLadderFloor(0, 150, 100, [0, 0, 10, 0, 10, 0, 0], 
+																	[50, -30, 0, 20, 25, -35]);
+		length = floorList.length;
+		for (i = 0; i < length; i += 1)
 		{
 			fVo = floorList[i];
 			floor = new Floor();
@@ -99,7 +113,7 @@ public class Platform2DTest extends Sprite
 	{
 		if (event.keyCode == Keyboard.A) this.roleVo.vx = -5;
 		else if (event.keyCode == Keyboard.D) this.roleVo.vx = 5;
-		else if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -20);
+		else if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -15);
 		else if (event.keyCode == Keyboard.R) this.reset();
 		else if (event.keyCode == Keyboard.Q) this.platform2D.distroy();
 	}
