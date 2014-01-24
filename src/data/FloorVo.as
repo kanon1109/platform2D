@@ -17,5 +17,10 @@ public class FloorVo
 	public var lBlockHeight:Number;
 	/**右边阻碍高度*/
 	public var rBlockHeight:Number;
+	/**是否允许往下穿过*/
+	public var allowThrough:Boolean;
+	/**标记*/
+	public var tag:int;
+
 }
 }

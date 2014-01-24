@@ -18,6 +18,7 @@ public class Platform2DTest extends Sprite
 	private var platform2D:Platform2D;
 	private var role:Sprite;
 	private var roleVo:BodyVo;
+	private var speed:Number = 0;
 	public function Platform2DTest() 
 	{
 		this.platform2D = new Platform2D(.8);
@@ -25,7 +26,7 @@ public class Platform2DTest extends Sprite
 		var gap:Number = 50;
 		var left:Point = new Point(0, 10);
 		var right:Point = new Point(200, 60);
-		var fVo:FloorVo = this.platform2D.createFloor(left, right);
+		var fVo:FloorVo = this.platform2D.createFloor(left, right, 0, 0, true);
 		var floor:Sprite = new Floor();
 		floor.x = left.x;
 		floor.y = left.y;
@@ -52,6 +53,7 @@ public class Platform2DTest extends Sprite
 		for (i = 0; i < length; i += 1)
 		{
 			fVo = floorList[i];
+			fVo.allowThrough = true;
 			floor = new Floor();
 			floor.x = fVo.left.x;
 			floor.y = fVo.left.y;
@@ -79,6 +81,7 @@ public class Platform2DTest extends Sprite
 	
 	private function loop(event:Event):void 
 	{
+		this.roleVo.vx = this.speed;
 		this.platform2D.update();
 		this.render();
 	}
@@ -104,18 +107,18 @@ public class Platform2DTest extends Sprite
 	
 	private function onKeyUpHandler(event:KeyboardEvent):void 
 	{
-		if (event.keyCode == Keyboard.A || 
-			event.keyCode == Keyboard.D) this.roleVo.vx = 0;
+		if (event.keyCode == Keyboard.A || event.keyCode == Keyboard.D) this.speed = 0;
 		else if (event.keyCode == Keyboard.SPACE) this.platform2D.releaseJump(this.roleVo);
 	}
 	
 	private function onKeyDownHandler(event:KeyboardEvent):void 
 	{
-		if (event.keyCode == Keyboard.A) this.roleVo.vx = -5;
-		else if (event.keyCode == Keyboard.D) this.roleVo.vx = 5;
+		if (event.keyCode == Keyboard.A) this.speed = -5;
+		else if (event.keyCode == Keyboard.D) this.speed = 5;
 		else if (event.keyCode == Keyboard.R) this.reset();
 		else if (event.keyCode == Keyboard.Q) this.platform2D.distroy();
-		if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -13);
+		if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -15);
+		if (event.keyCode == Keyboard.S) this.platform2D.throughFloor(this.roleVo);
 	}
 	
 	/**

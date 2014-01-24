@@ -175,11 +175,13 @@ public class Platform2D
 	 * @param	right			右边坐标
 	 * @param	lBlockHeight	左边阻碍高度
 	 * @param	rBlockHeight	右边阻碍高度
+	 * @param	allowThrough	是否允许向下穿透
 	 * @return	被创建的地板数据
 	 */
 	public function createFloor(left:Point, right:Point, 
 								lBlockHeight:Number = 0, 
-								rBlockHeight:Number = 0):FloorVo
+								rBlockHeight:Number = 0, 
+								allowThrough:Boolean=false):FloorVo
 	{
 		if (!this.floorList) return null;
 		var floorVo:FloorVo = new FloorVo();
@@ -189,6 +191,7 @@ public class Platform2D
 		if (rBlockHeight < 0) rBlockHeight = 0;
 		floorVo.lBlockHeight = lBlockHeight;
 		floorVo.rBlockHeight = rBlockHeight;
+		floorVo.allowThrough = allowThrough;
 		//不是水平的则计算斜率
 		if (right.y != left.y) floorVo.slope = MathUtil.getSlope(right.x, right.y, left.x, left.y);
 		else floorVo.slope = 0;
@@ -372,7 +375,7 @@ public class Platform2D
 		{
 			if (p < 0) p = 0;
 			else if (p > 1) p = 1;
-			bodyVo.vy *= p;
+			if (bodyVo.vy < 0) bodyVo.vy *= p;
 		}
 	}
 	
@@ -484,6 +487,21 @@ public class Platform2D
 	{
 		this.floorList = null;
 		this._bodyList = null;
+	}
+	
+	/**
+	 * 穿透地板
+	 * @param	bodyVo	需要穿透脚下地板的物体
+	 */
+	public function throughFloor(bodyVo:BodyVo):void 
+	{
+		if (bodyVo && 
+			bodyVo.floor && 
+			bodyVo.floor.allowThrough)
+		{
+			bodyVo.y += 1;
+			bodyVo.floor = null;
+		}
 	}
 	
 	/**
