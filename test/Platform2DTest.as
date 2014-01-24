@@ -48,7 +48,7 @@ public class Platform2DTest extends Sprite
 		}
 		
 		floorList = this.platform2D.createLadderFloor(0, 150, 100, [0, 0, 10, 0, 10, 0, 0], 
-																	[50, -30, 0, 20, 25, -35]);
+																	[80, -30, 0, 20, 25, -35]);
 		length = floorList.length;
 		for (i = 0; i < length; i += 1)
 		{
@@ -108,7 +108,7 @@ public class Platform2DTest extends Sprite
 	private function onKeyUpHandler(event:KeyboardEvent):void 
 	{
 		if (event.keyCode == Keyboard.A || event.keyCode == Keyboard.D) this.speed = 0;
-		else if (event.keyCode == Keyboard.SPACE) this.platform2D.releaseJump(this.roleVo);
+		if (event.keyCode == Keyboard.SPACE) this.platform2D.releaseJump(this.roleVo);
 	}
 	
 	private function onKeyDownHandler(event:KeyboardEvent):void 

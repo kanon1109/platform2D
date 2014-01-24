@@ -157,12 +157,10 @@ public class Platform2D
 		if (!bodyVo || !floorVo) return; 
 		var lHeightY:Number = floorVo.left.y - floorVo.lBlockHeight;
 		var rHeightY:Number = floorVo.right.y - floorVo.rBlockHeight;
-		if (floorVo.lBlockHeight > 0 && 
-			bodyVo.y > lHeightY && 
+		if (floorVo.lBlockHeight > 0 && bodyVo.y > lHeightY && 
 			bodyVo.x - bodyVo.width * .5 < floorVo.left.x)
 			bodyVo.x = floorVo.left.x + bodyVo.width * .5;
-		else if (floorVo.rBlockHeight > 0 && 
-				bodyVo.y > rHeightY && 
+		else if (floorVo.rBlockHeight > 0 && bodyVo.y > rHeightY && 
 				bodyVo.x + bodyVo.width * .5 > floorVo.right.x)
 				bodyVo.x = floorVo.right.x - bodyVo.width * .5;
 	}
@@ -289,7 +287,8 @@ public class Platform2D
 	 * @param	checkFloorHeight	是否对floor进行高度判断
 	 * @return	是否在范围之内
 	 */
-	public function isOutSide(bodyVo:BodyVo, floorVo:FloorVo, offset:Number = 1, checkFloorHeight:Boolean=false):Boolean
+	public function isOutSide(bodyVo:BodyVo, floorVo:FloorVo, 
+								offset:Number = 1, checkFloorHeight:Boolean=false):Boolean
 	{
 		if (!floorVo) return false;
 		if (!checkFloorHeight)
@@ -298,10 +297,16 @@ public class Platform2D
 		}
 		else
 		{
-			if (bodyVo.x < floorVo.left.x - offset && 
-				bodyVo.y < floorVo.lBlockHeight) return true;//出左边界
-			else if (bodyVo.x > floorVo.right.x + offset && 
-					bodyVo.y < floorVo.rBlockHeight) return true;//出右边界
+			if (bodyVo.x < floorVo.left.x - offset && bodyVo.y < floorVo.lBlockHeight) 
+			{
+				//出左边界
+				if (floorVo.lBlockHeight == 0) return true;
+			}
+			else if (bodyVo.x > floorVo.right.x + offset && bodyVo.y < floorVo.rBlockHeight) 
+			{
+				//出右边界
+				if (floorVo.rBlockHeight == 0) return true;
+			}
 		}
 		return false;
 	}
