@@ -64,7 +64,7 @@ public class Platform2DTest extends Sprite
 		
 		this.role = new Role();
 		this.addChild(this.role);
-		this.roleVo = this.platform2D.createBody(150, 100, 18, 50, this.role);
+		this.roleVo = this.platform2D.createBody(150, 100, 36, 50, this.role);
 		
 		this.initEvent();
 	}
