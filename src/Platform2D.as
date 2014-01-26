@@ -74,6 +74,7 @@ public class Platform2D
 	 * 链接到另一个地板
 	 * @param	bodyVo		物体
 	 * @param	prevFloor	上一次的地板
+	 * @return	连接到的地板
 	 */
 	private function linkFloor(bodyVo:BodyVo, prevFloor:FloorVo):FloorVo
 	{
