@@ -3,6 +3,7 @@ package
 import data.BodyVo;
 import data.FloorVo;
 import flash.display.DisplayObject;
+import flash.display.Shape;
 import flash.display.Sprite;
 import flash.events.Event;
 import flash.events.KeyboardEvent;
@@ -19,22 +20,38 @@ public class Platform2DTest extends Sprite
 	private var role:Sprite;
 	private var roleVo:BodyVo;
 	private var speed:Number = 0;
+	private var shape:Shape;
 	public function Platform2DTest() 
 	{
+		this.shape = new Shape();
+		this.addChild(this.shape);
+		
 		this.platform2D = new Platform2D(.8);
 		
-		var gap:Number = 50;
-		var left:Point = new Point(0, 10);
-		var right:Point = new Point(200, 60);
-		var fVo:FloorVo = this.platform2D.createFloor(left, right, 0, 0, true);
-		var floor:Sprite = new Floor();
-		floor.x = left.x;
-		floor.y = left.y;
-		floor.width = this.platform2D.getFloorDistance(fVo);
-		floor.rotation = this.platform2D.getRotation(fVo);
-		this.addChild(floor);
 		
-		var floorList:Array = this.platform2D.createFloorChain(0, 300, 100, [0, 20, 0, 30, -40, 0, 60]);
+		var left:Point = new Point(100, 110);
+		var right:Point = new Point(200, 160);
+		var fVo:FloorVo = this.platform2D.createFloor(left, right, 30, true);
+		this.shape.graphics.lineStyle(1, 0);
+		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
+		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
+		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
+		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
+		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
+		
+		left = new Point(200, 160);
+		right = new Point(300, 110);
+		fVo = this.platform2D.createFloor(left, right, 30, true);
+		trace("fVo.leftThick", fVo.leftThick);
+		trace("fVo.rightThick", fVo.rightThick);
+		this.shape.graphics.lineStyle(1, 0);
+		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
+		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
+		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
+		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
+		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
+		
+		/*var floorList:Array = this.platform2D.createFloorChain(0, 300, 100, [0, 20, 0, 30, -40, 0, 60]);
 		var length:int = floorList.length;
 		for (var i:int = 0; i < length; i += 1)
 		{
@@ -45,22 +62,7 @@ public class Platform2DTest extends Sprite
 			floor.width = this.platform2D.getFloorDistance(fVo);
 			floor.rotation = this.platform2D.getRotation(fVo);
 			this.addChild(floor);
-		}
-		
-		floorList = this.platform2D.createLadderFloor(0, 150, 100, [0, 0, 10, 0, 10, 0, 0], 
-																	[80, -30, 0, 20, 25, -35]);
-		length = floorList.length;
-		for (i = 0; i < length; i += 1)
-		{
-			fVo = floorList[i];
-			fVo.allowThrough = true;
-			floor = new Floor();
-			floor.x = fVo.left.x;
-			floor.y = fVo.left.y;
-			floor.width = this.platform2D.getFloorDistance(fVo);
-			floor.rotation = this.platform2D.getRotation(fVo);
-			this.addChild(floor);
-		}
+		}*/
 		
 		this.role = new Role();
 		this.addChild(this.role);

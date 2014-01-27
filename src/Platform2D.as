@@ -128,72 +128,58 @@ public class Platform2D
 		return newFloor;
 	}
 	
-	/**
-	 * 判断地板锁定物体
-	 * @param	bodyVo 物体数据
-	 */
-	private function checkBlock(bodyVo:BodyVo):void
-	{
-		if (!bodyVo.floor)
-		{
-			var fVo:FloorVo;
-			var length:int = this.floorList.length;
-			for (var i:int = 0; i < length; i += 1)
-			{
-				fVo = this.floorList[i];
-				if (!this.isOutSide(bodyVo, fVo))
-					this.blockFloor(bodyVo, fVo);
-			}
-		}
-		else this.blockFloor(bodyVo, bodyVo.floor);
-	}
-
-	/**
-	 * 地板锁定物体
-	 * @param	bodyVo			物体数据
-	 * @param	floorVo			地板数据
-	 */
-	private function blockFloor(bodyVo:BodyVo, floorVo:FloorVo):void
-	{
-		if (!bodyVo || !floorVo) return; 
-		var lHeightY:Number = floorVo.left.y - floorVo.lBlockHeight;
-		var rHeightY:Number = floorVo.right.y - floorVo.rBlockHeight;
-		if (floorVo.lBlockHeight > 0 && bodyVo.y > lHeightY && 
-			bodyVo.x - bodyVo.width * .5 < floorVo.left.x)
-			bodyVo.x = floorVo.left.x + bodyVo.width * .5;
-		else if (floorVo.rBlockHeight > 0 && bodyVo.y > rHeightY && 
-				bodyVo.x + bodyVo.width * .5 > floorVo.right.x)
-				bodyVo.x = floorVo.right.x - bodyVo.width * .5;
-	}
-	
-	
 	//************************public function************************
 	/**
 	 * 创建一个地板
 	 * @param	left			左边坐标
 	 * @param	right			右边坐标
-	 * @param	lBlockHeight	左边阻碍高度
-	 * @param	rBlockHeight	右边阻碍高度
+	 * @param	thick			厚度
 	 * @param	allowThrough	是否允许向下穿透
 	 * @return	被创建的地板数据
 	 */
-	public function createFloor(left:Point, right:Point, 
-								lBlockHeight:Number = 0, 
-								rBlockHeight:Number = 0, 
-								allowThrough:Boolean=false):FloorVo
+	public function createFloor(left:Point, right:Point, thick:Number = 0, allowThrough:Boolean = false):FloorVo
 	{
 		if (!this.floorList) return null;
 		var floorVo:FloorVo = new FloorVo();
 		floorVo.left = left;
 		floorVo.right = right;
-		if (lBlockHeight < 0) lBlockHeight = 0;
-		if (rBlockHeight < 0) rBlockHeight = 0;
-		floorVo.lBlockHeight = lBlockHeight;
-		floorVo.rBlockHeight = rBlockHeight;
+		if (left.x > right.x)
+		{
+			var x:Number = floorVo.right.x;
+			right.x = floorVo.left.x;
+			floorVo.left.x = x;
+		}
 		floorVo.allowThrough = allowThrough;
 		//不是水平的则计算斜率
 		if (right.y != left.y) floorVo.slope = MathUtil.getSlope(right.x, right.y, left.x, left.y);
 		else floorVo.slope = 0;
+		var leftThick:Point;
+		var rightThick:Point;
+		if (floorVo.slope != 0)
+		{
+			//TODO判断左右坐标高低，并且计算最上y+thick, 最下y+thick
+			if (left.y < right.y)
+			{
+				//左边比右边高
+				leftThick = new Point(left.x, left.y + thick);
+				if (leftThick.y < right.y) leftThick.y = right.y;
+				rightThick = new Point(right.x, leftThick.y);
+			}
+			else
+			{
+				//右边比左边高
+				rightThick = new Point(right.x, right.y + thick);
+				if (rightThick.y < left.y) rightThick.y = left.y;
+				leftThick = new Point(left.x, rightThick.y);
+			}
+		}
+		else
+		{
+			leftThick = new Point(left.x, left.y + thick);
+			rightThick = new Point(right.x, right.y + thick);
+		}
+		floorVo.leftThick = leftThick;
+		floorVo.rightThick = rightThick;
 		this.floorList.push(floorVo);
 		return floorVo;
 	}
@@ -285,31 +271,15 @@ public class Platform2D
 	 * @param	bodyVo				物体数据
 	 * @param	floorVo				地板数据
 	 * @param	offset				误差
-	 * @param	checkFloorHeight	是否对floor进行高度判断
 	 * @return	是否在范围之内
 	 */
-	public function isOutSide(bodyVo:BodyVo, floorVo:FloorVo, 
-								offset:Number = 1, checkFloorHeight:Boolean=false):Boolean
+	public function isOutSide(bodyVo:BodyVo, floorVo:FloorVo, offset:Number = 1):Boolean
 	{
 		if (!floorVo) return false;
-		if (!checkFloorHeight)
-		{
-			return bodyVo.x < floorVo.left.x - offset || bodyVo.x > floorVo.right.x + offset;
-		}
-		else
-		{
-			if (bodyVo.x < floorVo.left.x - offset && bodyVo.y < floorVo.lBlockHeight) 
-			{
-				//出左边界
-				if (floorVo.lBlockHeight == 0) return true;
-			}
-			else if (bodyVo.x > floorVo.right.x + offset && bodyVo.y < floorVo.rBlockHeight) 
-			{
-				//出右边界
-				if (floorVo.rBlockHeight == 0) return true;
-			}
-		}
-		return false;
+		var width:Number = 0;
+		if (floorVo.slope == 0) width = bodyVo.width * .5;
+		return bodyVo.x < floorVo.left.x - width - offset || 
+				bodyVo.x > floorVo.right.x + width + offset;
 	}
 	
 	/**
@@ -326,7 +296,6 @@ public class Platform2D
 			bodyVo.prevX = bodyVo.x;
 			bodyVo.prevY = bodyVo.y;
 			bodyVo.x += bodyVo.vx;
-			this.checkBlock(bodyVo);
 			if (!bodyVo.floor)
 			{
 				//如果没有地板则搜索，设置重力效果
@@ -412,75 +381,6 @@ public class Platform2D
 			posY = left.y + Math.sin(degrees) * distance;
 			right = new Point(posX, posY);
 			fVo = this.createFloor(left, right);
-			floorList.push(fVo);
-		}
-		return floorList;
-	}
-	
-	/**
-	 * 创建阶梯式的地板
-	 * @param	x				起始x坐标
-	 * @param	y				起始y坐标
-	 * @param	distance		地板的长度	
-	 * @param	angleList		地板的坡度列表（存放的是角度值）
-	 * @param	heightList		地板阻碍高度[-10, 10, 0] 负数为向上的高度，正数为向下，0为无高度。
-	 * @return	地板列表
-	 */
-	public function createLadderFloor(x:Number, y:Number, distance:Number, 
-									angleList:Array, heightList:Array):Array
-	{
-		var floorList:Array = [];
-		var fVo:FloorVo;
-		var length:int = angleList.length;
-		var left:Point; 
-		var right:Point;
-		var lBlockHeight:Number = 0;
-		var rBlockHeight:Number = 0;
-		var degrees:Number;//弧度
-		var height:Number = 0;
-		var prevHeight:Number = 0;
-		var posX:Number;
-		var posY:Number;
-		for (var i:int = 0; i < length; i += 1)
-		{
-			degrees = MathUtil.dgs2rds(angleList[i]);
-			//大于0 为向下，小于0为向上
-			height = heightList[i];
-			lBlockHeight = 0;
-			rBlockHeight = 0;
-			if (i == 0) 
-			{
-				left = new Point(x, y);
-			}
-			else
-			{
-				if (prevHeight > 0)
-				{
-					//如果上一个线段的右侧锁定高度向下
-					left = right.clone();
-					left.y += prevHeight;
-					lBlockHeight = prevHeight;
-				}
-				else if (prevHeight < 0)
-				{
-					//如果上一个线段的右侧锁定高度向上
-					left = right.clone();
-					left.y += prevHeight;
-				}
-				else
-				{
-					left = right.clone(); //没有高度
-				}
-			}
-			posX = left.x + Math.cos(degrees) * distance;
-			posY = left.y + Math.sin(degrees) * distance;
-			right = new Point(posX, posY);
-			
-			if (height >= 0) rBlockHeight = 0; //线段右边高度如果大于0则 不设置右边锁定高度
-			else if (height < 0) rBlockHeight = Math.abs(height); //线段的右边如果 高度小于0 则设置右边锁定高度
-			
-			prevHeight = height;
-			fVo = this.createFloor(left, right, lBlockHeight, rBlockHeight);
 			floorList.push(fVo);
 		}
 		return floorList;
