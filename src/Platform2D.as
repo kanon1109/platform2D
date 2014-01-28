@@ -52,7 +52,7 @@ public class Platform2D
 		{
 			fVo = this.floorList[i];
 			//判断x坐标是否在这个地板之内
-			if (!this.isInOutSide(bodyVo, fVo))
+			if (!this.isOutSide(bodyVo, fVo, bodyVo.width * .5))
 			{
 				//根据body的prevX求出prevY。
 				prevY = this.getFloorTopY(fVo, bodyVo.prevX);
@@ -103,7 +103,7 @@ public class Platform2D
 			if (fVo != prevFloor)
 			{
 				//在x范围内
-				if (!this.isInOutSide(bodyVo, fVo))
+				if (!this.isOutSide(bodyVo, fVo, bodyVo.width * .5))
 				{
 					//如果是往左出边界则获取新的地板的右坐标。
 					if (isLeft) newPoint = fVo.right;
@@ -126,6 +126,44 @@ public class Platform2D
 			}
 		}
 		return newFloor;
+	}
+	
+	/**
+	 * 判断物体阻碍
+	 * @param	bodyVo		物体对象
+	 */
+	private function checkBodyBlock(bodyVo:BodyVo):void 
+	{
+		if (bodyVo.vx == 0) return;
+		var length:int = this.floorList.length;
+		var fVo:FloorVo;
+		for (var i:int = 0; i < length; i += 1) 
+		{
+			fVo = this.floorList[i];
+			if (fVo != bodyVo.floor)
+			{
+				if (bodyVo.vx > 0 && Math.abs(bodyVo.x - fVo.left.x) <= bodyVo.width * .5)
+				{
+					//如果本身有地板且 地板高度小于判断地板的高度则忽略
+					if (bodyVo.floor && bodyVo.floor.right.y <= fVo.left.y) continue;
+					if (bodyVo.y > fVo.left.y && bodyVo.y - bodyVo.height < fVo.leftThick.y)
+					{
+						bodyVo.x = fVo.left.x - bodyVo.width * .5 - 1;
+						break;
+					}
+				}
+				else if (bodyVo.vx < 0 && Math.abs(bodyVo.x - fVo.right.x) <= bodyVo.width * .5)
+				{
+					//如果本身有地板且 地板高度小于判断地板的高度则忽略
+					if (bodyVo.floor && bodyVo.floor.left.y <= fVo.right.y) continue;
+					if (bodyVo.y > fVo.right.y && bodyVo.y - bodyVo.height < fVo.rightThick.y)
+					{
+						bodyVo.x = fVo.right.x + bodyVo.width * .5 - 1;
+						break;
+					}
+				}
+			}
+		}
 	}
 	
 	//************************public function************************
@@ -283,19 +321,6 @@ public class Platform2D
 	}
 	
 	/**
-	 * 是否整个身体处于地板的外部
-	 * @param	bodyVo				物体数据
-	 * @param	floorVo				地板数据
-	 * @param	offset				误差
-	 * @return	是否在范围之内
-	 */
-	public function isInOutSide(bodyVo:BodyVo, floorVo:FloorVo, offset:Number = 1):Boolean
-	{
-		var width:Number = bodyVo.width * .5 + offset;
-		return this.isOutSide(bodyVo, floorVo, width);
-	}
-	
-	/**
 	 * 更新数据
 	 */
 	public function update():void
@@ -309,6 +334,7 @@ public class Platform2D
 			bodyVo.prevX = bodyVo.x;
 			bodyVo.prevY = bodyVo.y;
 			bodyVo.x += bodyVo.vx;
+			this.checkBodyBlock(bodyVo);
 			if (!bodyVo.floor)
 			{
 				//如果没有地板则搜索，设置重力效果

@@ -32,6 +32,7 @@ public class Platform2DTest extends Sprite
 		var left:Point = new Point(100, 110);
 		var right:Point = new Point(200, 160);
 		var fVo:FloorVo = this.platform2D.createFloor(left, right, 30, true);
+		fVo.tag = 0;
 		this.shape.graphics.lineStyle(1, 0);
 		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
 		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
@@ -42,6 +43,7 @@ public class Platform2DTest extends Sprite
 		left = new Point(200, 160);
 		right = new Point(300, 110);
 		fVo = this.platform2D.createFloor(left, right, 30, true);
+		fVo.tag = 1;
 		this.shape.graphics.lineStyle(1, 0);
 		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
 		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
@@ -49,9 +51,10 @@ public class Platform2DTest extends Sprite
 		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
 		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
 		
-		left = new Point(300, 110);
+		left = new Point(300, 100);
 		right = new Point(400, 160);
 		fVo = this.platform2D.createFloor(left, right, 30, true);
+		fVo.tag = 2;
 		this.shape.graphics.lineStyle(1, 0);
 		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
 		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
