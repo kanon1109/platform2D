@@ -42,8 +42,16 @@ public class Platform2DTest extends Sprite
 		left = new Point(200, 160);
 		right = new Point(300, 110);
 		fVo = this.platform2D.createFloor(left, right, 30, true);
-		trace("fVo.leftThick", fVo.leftThick);
-		trace("fVo.rightThick", fVo.rightThick);
+		this.shape.graphics.lineStyle(1, 0);
+		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
+		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
+		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
+		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
+		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
+		
+		left = new Point(300, 110);
+		right = new Point(400, 160);
+		fVo = this.platform2D.createFloor(left, right, 30, true);
 		this.shape.graphics.lineStyle(1, 0);
 		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
 		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);

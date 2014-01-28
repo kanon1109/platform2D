@@ -52,7 +52,7 @@ public class Platform2D
 		{
 			fVo = this.floorList[i];
 			//判断x坐标是否在这个地板之内
-			if (!this.isOutSide(bodyVo, fVo))
+			if (!this.isInOutSide(bodyVo, fVo))
 			{
 				//根据body的prevX求出prevY。
 				prevY = this.getFloorTopY(fVo, bodyVo.prevX);
@@ -103,7 +103,7 @@ public class Platform2D
 			if (fVo != prevFloor)
 			{
 				//在x范围内
-				if (!this.isOutSide(bodyVo, fVo))
+				if (!this.isInOutSide(bodyVo, fVo))
 				{
 					//如果是往左出边界则获取新的地板的右坐标。
 					if (isLeft) newPoint = fVo.right;
@@ -262,12 +262,14 @@ public class Platform2D
 			if (floorVo.slope > 0) percent = (maxX - posX) /  (maxX - minX); //如果是下坡
 			else percent = (posX - minX) / (maxX - minX); //如果是上坡
 			posY = maxY - percent * (maxY - minY);
+			if (posY < minY) posY = minY;
+			else if (posY > maxY) posY = maxY;
 		}
 		return posY;
 	}
 	
 	/**
-	 * 判断x坐标是否在地板的x范围之内
+	 * 判断是否身体的一部分在地板的外部
 	 * @param	bodyVo				物体数据
 	 * @param	floorVo				地板数据
 	 * @param	offset				误差
@@ -276,10 +278,21 @@ public class Platform2D
 	public function isOutSide(bodyVo:BodyVo, floorVo:FloorVo, offset:Number = 1):Boolean
 	{
 		if (!floorVo) return false;
-		var width:Number = 0;
-		if (floorVo.slope == 0) width = bodyVo.width * .5;
-		return bodyVo.x < floorVo.left.x - width - offset || 
-				bodyVo.x > floorVo.right.x + width + offset;
+		return bodyVo.x < floorVo.left.x - offset || 
+				bodyVo.x > floorVo.right.x + offset;
+	}
+	
+	/**
+	 * 是否整个身体处于地板的外部
+	 * @param	bodyVo				物体数据
+	 * @param	floorVo				地板数据
+	 * @param	offset				误差
+	 * @return	是否在范围之内
+	 */
+	public function isInOutSide(bodyVo:BodyVo, floorVo:FloorVo, offset:Number = 1):Boolean
+	{
+		var width:Number = bodyVo.width * .5 + offset;
+		return this.isOutSide(bodyVo, floorVo, width);
 	}
 	
 	/**
