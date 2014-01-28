@@ -275,6 +275,8 @@ public class Platform2D
 			if (floorVo.slope > 0) percent = (maxX - posX) /  (maxX - minX); //如果是下坡
 			else percent = (posX - minX) / (maxX - minX); //如果是上坡
 			posY = maxY - percent * (maxY - minY);
+			if (posY < minY) posY = minY;
+			else if (posY > maxY) posY = maxY;
 		}
 		return posY;
 	}
