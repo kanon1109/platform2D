@@ -52,7 +52,7 @@ public class Platform2D
 		{
 			fVo = this.floorList[i];
 			//判断x坐标是否在这个地板之内
-			if (!this.isOutSide(bodyVo, fVo))
+			if (!this.isOutSide(bodyVo, fVo, bodyVo.width * .5))
 			{
 				//根据body的prevX求出prevY。
 				prevY = this.getFloorTopY(fVo, bodyVo.prevX);
@@ -102,7 +102,7 @@ public class Platform2D
 			if (fVo != prevFloor)
 			{
 				//在x范围内
-				if (!this.isOutSide(bodyVo, fVo))
+				if (!this.isOutSide(bodyVo, fVo, bodyVo.width * .5))
 				{
 					//如果是往左出边界则获取新的地板的右坐标。
 					if (isLeft) newPoint = fVo.right;
