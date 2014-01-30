@@ -111,12 +111,12 @@ public class Platform2DTest extends Sprite
 		for (var i:int = 0; i < length; i += 1)
 		{
 			fVo = floorList[i];
-			floor = new Floor();
-			floor.x = fVo.left.x;
-			floor.y = fVo.left.y;
-			floor.width = this.platform2D.getFloorDistance(fVo);
-			floor.rotation = this.platform2D.getRotation(fVo);
-			this.addChild(floor);
+			this.shape.graphics.lineStyle(1, 0);
+			this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
+			this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
+			this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
+			this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
+			this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
 		}*/
 		
 		this.role = new Role();
