@@ -76,12 +76,12 @@ public class Platform2D
 	 * @param	prevFloor	上一次的地板
 	 * @return	连接到的地板
 	 */
-	private function linkFloor(bodyVo:BodyVo, prevFloor:FloorVo):FloorVo
+	private function linkFloor(bodyVo:BodyVo, prevFloor:FloorVo):void
 	{
 		//是往左还是往右
-		var isLeft:Boolean;
-		if (bodyVo.x < prevFloor.left.x) isLeft = true;
-		else if (bodyVo.x > prevFloor.right.x) isLeft = false;
+		if (bodyVo.vx == 0) return;
+		var isLeft:Boolean = false;
+		if (bodyVo.vx < 0) isLeft = true;
 		var length:int = this.floorList.length;
 		var fVo:FloorVo;
 		//上一次地板的坐标
@@ -94,38 +94,34 @@ public class Platform2D
 		var newFloor:FloorVo;
 		//上下坡位置有加成权重
 		var offsetY:Number = 0;
+		//存放符合条件的地板
+		var tempAry:Array = [];
 		//最大高度 用于找到允许连接的地板内最小高度的地板
-		var topY:Number = Infinity;
 		for (var i:int = 0; i < length; i += 1)
 		{
 			fVo = this.floorList[i];
-			//不是上一次的地步
+			//不是上一次的地板
 			if (fVo != prevFloor)
 			{
-				//在x范围内
+				//身体一部分在地板范围内
 				if (!this.isOutSide(bodyVo, fVo, bodyVo.width * .5))
 				{
 					//如果是往左出边界则获取新的地板的右坐标。
 					if (isLeft) newPoint = fVo.right;
 					else newPoint = fVo.left;
-					//如果是斜面 上坡比下坡
-					if (fVo.slope > 0) offsetY = -.5; //下坡
-					else if (fVo.slope < 0) offsetY = .5; //上坡
-					//找到2个地板链接处距离小于最短距离并且y坐标高度最小的
+					//找到地板链接处距离小于最短距离
 					if (Point.distance(prevPoint, newPoint) <= this.distance)
-					{
-						//找到所有（地板Y坐标+offsetY）的值中最小的跳出循环。
-						if (topY > newPoint.y + offsetY)
-						{
-							topY = newPoint.y + offsetY;
-							newFloor = fVo;
-						}
-						else break;
-					}
+						tempAry.push(fVo);
 				}
 			}
 		}
-		return newFloor;
+		if (tempAry.length > 0)
+		{
+			//找到地板中斜率最大的（下坡）优先级最高
+			if (tempAry.length > 1) tempAry.sortOn("slope", Array.NUMERIC);
+			bodyVo.floor = tempAry[tempAry.length - 1];
+			//trace("bodyVo.floor", bodyVo.floor.tag);
+		}
 	}
 	
 	/**
@@ -134,7 +130,7 @@ public class Platform2D
 	 */
 	private function checkBodyBlock(bodyVo:BodyVo):void 
 	{
-		if (bodyVo.vx == 0) return;
+		if (bodyVo.vx == 0 && bodyVo.vy == 0) return;
 		var length:int = this.floorList.length;
 		var fVo:FloorVo;
 		for (var i:int = 0; i < length; i += 1) 
@@ -145,21 +141,35 @@ public class Platform2D
 				if (bodyVo.vx > 0 && Math.abs(bodyVo.x - fVo.left.x) <= bodyVo.width * .5)
 				{
 					//如果本身有地板且 地板高度小于判断地板的高度则忽略
-					if (bodyVo.floor && bodyVo.floor.right.y <= fVo.left.y) continue;
+					if (bodyVo.floor && bodyVo.floor.right.y <= fVo.left.y) continue; 
+					if (fVo.left.y == fVo.leftThick.y) continue;
+					//如果物体的矩形范围在地板厚度之内的则阻碍地板
 					if (bodyVo.y > fVo.left.y && bodyVo.y - bodyVo.height < fVo.leftThick.y)
 					{
 						bodyVo.x = fVo.left.x - bodyVo.width * .5 - 1;
-						break;
 					}
 				}
 				else if (bodyVo.vx < 0 && Math.abs(bodyVo.x - fVo.right.x) <= bodyVo.width * .5)
 				{
 					//如果本身有地板且 地板高度小于判断地板的高度则忽略
 					if (bodyVo.floor && bodyVo.floor.left.y <= fVo.right.y) continue;
+					if (fVo.right.y == fVo.rightThick.y) continue;
+					//如果物体的矩形范围在地板厚度之内的则阻碍地板
 					if (bodyVo.y > fVo.right.y && bodyVo.y - bodyVo.height < fVo.rightThick.y)
+						bodyVo.x = fVo.right.x + bodyVo.width * .5 + 1;
+				}
+				//判断向上跳跃时的阻碍
+				if (bodyVo.vy < 0)
+				{
+					if (!fVo.through && !this.isOutSide(bodyVo, fVo, bodyVo.width * .5))
 					{
-						bodyVo.x = fVo.right.x + bodyVo.width * .5 - 1;
-						break;
+						//上一帧的y坐标在地板下面，当前帧在地板上面则判断为 碰到地板
+						if (bodyVo.prevY - bodyVo.height >= fVo.leftThick.y && 
+							bodyVo.y - bodyVo.height < fVo.leftThick.y)
+						{
+							bodyVo.y = fVo.leftThick.y + bodyVo.height + 1;
+							bodyVo.vy = 0;
+						}
 					}
 				}
 			}
@@ -171,11 +181,15 @@ public class Platform2D
 	 * 创建一个地板
 	 * @param	left			左边坐标
 	 * @param	right			右边坐标
-	 * @param	thick			厚度
-	 * @param	allowThrough	是否允许向下穿透
+	 * @param	thick			厚度 以2端坐标最靠上的为起始点，
+	 * 							如果厚度值+最靠上的端点坐标后小于最靠下端点，
+	 *							则厚度会自动补充到最靠下坐标为止
+	 * @param	solid			是否允许向下穿透
+	 * @param	through			是否允许向上穿透
 	 * @return	被创建的地板数据
 	 */
-	public function createFloor(left:Point, right:Point, thick:Number = 0, allowThrough:Boolean = false):FloorVo
+	public function createFloor(left:Point, right:Point, thick:Number = 0, 
+								solid:Boolean = false, through:Boolean = false):FloorVo
 	{
 		if (!this.floorList) return null;
 		var floorVo:FloorVo = new FloorVo();
@@ -187,7 +201,8 @@ public class Platform2D
 			right.x = floorVo.left.x;
 			floorVo.left.x = x;
 		}
-		floorVo.allowThrough = allowThrough;
+		floorVo.solid = solid;
+		floorVo.through = through;
 		//不是水平的则计算斜率
 		if (right.y != left.y) floorVo.slope = MathUtil.getSlope(right.x, right.y, left.x, left.y);
 		else floorVo.slope = 0;
@@ -231,7 +246,9 @@ public class Platform2D
 	 * @param	userData		用户数据
 	 * @return	物体数据
 	 */
-	public function createBody(x:Number, y:Number, width:Number = 0, height:Number = 0, userData:*= null):BodyVo
+	public function createBody(x:Number, y:Number,
+								width:Number = 0, height:Number = 0, 
+								userData:*= null):BodyVo
 	{
 		if (!this._bodyList || this._bodyList.indexOf(bodyVo) != -1) return null;
 		var bodyVo:BodyVo = new BodyVo();
@@ -334,7 +351,6 @@ public class Platform2D
 			bodyVo.prevX = bodyVo.x;
 			bodyVo.prevY = bodyVo.y;
 			bodyVo.x += bodyVo.vx;
-			this.checkBodyBlock(bodyVo);
 			if (!bodyVo.floor)
 			{
 				//如果没有地板则搜索，设置重力效果
@@ -346,10 +362,13 @@ public class Platform2D
 			{
 				//获取在斜面上移动时的y坐标
 				bodyVo.y = this.getFloorTopY(bodyVo.floor, bodyVo.x);
-				//判断是否出界
-				if (this.isOutSide(bodyVo, bodyVo.floor))
-					bodyVo.floor = this.linkFloor(bodyVo, bodyVo.floor);
+				//判断是一部分否出界
+				if (this.isOutSide(bodyVo, bodyVo.floor)) this.linkFloor(bodyVo, bodyVo.floor);
+				//判断是否完全出界
+				if (this.isOutSide(bodyVo, bodyVo.floor, bodyVo.width * .5))
+					bodyVo.floor = null;
 			}
+			this.checkBodyBlock(bodyVo);
 		}
 	}
 	
@@ -373,6 +392,7 @@ public class Platform2D
 	 */
 	public function jump(bodyVo:BodyVo, vy:Number = 0):void
 	{
+		trace("jump" , bodyVo.floor);
 		if (!bodyVo || !bodyVo.floor) return;
 		this.moveBody(bodyVo, bodyVo.vx, vy);
 		bodyVo.floor = null;
@@ -442,7 +462,7 @@ public class Platform2D
 	{
 		if (bodyVo && 
 			bodyVo.floor && 
-			bodyVo.floor.allowThrough)
+			bodyVo.floor.solid)
 		{
 			bodyVo.y += 1;
 			bodyVo.floor = null;

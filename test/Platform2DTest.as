@@ -9,6 +9,7 @@ import flash.events.Event;
 import flash.events.KeyboardEvent;
 import flash.geom.Point;
 import flash.ui.Keyboard;
+import net.hires.debug.Stats;
 
 /**
  * ...2d平台测试
@@ -28,10 +29,9 @@ public class Platform2DTest extends Sprite
 		
 		this.platform2D = new Platform2D(.8);
 		
-		
-		var left:Point = new Point(100, 110);
-		var right:Point = new Point(200, 160);
-		var fVo:FloorVo = this.platform2D.createFloor(left, right, 30, true);
+		var left:Point = new Point(0, 120);
+		var right:Point = new Point(100, 120);
+		var fVo:FloorVo = this.platform2D.createFloor(left, right, 180, true);
 		fVo.tag = 0;
 		this.shape.graphics.lineStyle(1, 0);
 		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
@@ -40,8 +40,8 @@ public class Platform2DTest extends Sprite
 		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
 		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
 		
-		left = new Point(200, 160);
-		right = new Point(300, 110);
+		left = new Point(100, 160);
+		right = new Point(200, 260);
 		fVo = this.platform2D.createFloor(left, right, 30, true);
 		fVo.tag = 1;
 		this.shape.graphics.lineStyle(1, 0);
@@ -51,10 +51,54 @@ public class Platform2DTest extends Sprite
 		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
 		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
 		
-		left = new Point(300, 100);
-		right = new Point(400, 160);
-		fVo = this.platform2D.createFloor(left, right, 30, true);
+		left = new Point(200, 260);
+		right = new Point(300, 260);
+		fVo = this.platform2D.createFloor(left, right, 0, true, true);
 		fVo.tag = 2;
+		this.shape.graphics.lineStyle(1, 0);
+		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
+		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
+		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
+		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
+		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
+		
+		left = new Point(300, 200);
+		right = new Point(400, 260);
+		fVo = this.platform2D.createFloor(left, right, 30, true);
+		fVo.tag = 3;
+		this.shape.graphics.lineStyle(1, 0);
+		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
+		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
+		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
+		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
+		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
+		
+		left = new Point(400, 220);
+		right = new Point(600, 220);
+		fVo = this.platform2D.createFloor(left, right, 30, true);
+		fVo.tag = 4;
+		this.shape.graphics.lineStyle(1, 0);
+		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
+		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
+		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
+		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
+		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
+		
+		left = new Point(200, 120);
+		right = new Point(400, 120);
+		fVo = this.platform2D.createFloor(left, right, 30, true, true);
+		fVo.tag = 5;
+		this.shape.graphics.lineStyle(1, 0);
+		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
+		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
+		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
+		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
+		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
+		
+		left = new Point(200, 260);
+		right = new Point(300, 360);
+		fVo = this.platform2D.createFloor(left, right, 30, true);
+		fVo.tag = 6;
 		this.shape.graphics.lineStyle(1, 0);
 		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
 		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
@@ -78,6 +122,8 @@ public class Platform2DTest extends Sprite
 		this.role = new Role();
 		this.addChild(this.role);
 		this.roleVo = this.platform2D.createBody(150, 100, 36, 50, this.role);
+		
+		this.addChild(new Stats());
 		
 		this.initEvent();
 	}
@@ -130,7 +176,7 @@ public class Platform2DTest extends Sprite
 		else if (event.keyCode == Keyboard.D) this.speed = 5;
 		else if (event.keyCode == Keyboard.R) this.reset();
 		else if (event.keyCode == Keyboard.Q) this.platform2D.distroy();
-		if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -15);
+		if (event.keyCode == Keyboard.SPACE) this.platform2D.jump(this.roleVo, -13);
 		if (event.keyCode == Keyboard.S) this.platform2D.throughFloor(this.roleVo);
 	}
 	
