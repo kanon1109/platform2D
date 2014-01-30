@@ -19,6 +19,9 @@ public class FloorVo
 	public var through:Boolean;
 	/**标记*/
 	public var tag:int;
-
+	/**左边厚度坐标*/
+	public var leftThick:Point;
+	/**右边厚度坐标*/
+	public var rightThick:Point;
 }
 }
