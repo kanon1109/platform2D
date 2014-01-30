@@ -120,7 +120,6 @@ public class Platform2D
 			//找到地板中斜率最大的（下坡）优先级最高
 			if (tempAry.length > 1) tempAry.sortOn("slope", Array.NUMERIC);
 			bodyVo.floor = tempAry[tempAry.length - 1];
-			//trace("bodyVo.floor", bodyVo.floor.tag);
 		}
 	}
 	
@@ -394,7 +393,6 @@ public class Platform2D
 	 */
 	public function jump(bodyVo:BodyVo, vy:Number = 0):void
 	{
-		trace("jump" , bodyVo.floor);
 		if (!bodyVo || !bodyVo.floor) return;
 		this.moveBody(bodyVo, bodyVo.vx, vy);
 		bodyVo.floor = null;

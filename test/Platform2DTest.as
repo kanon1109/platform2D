@@ -84,9 +84,9 @@ public class Platform2DTest extends Sprite
 		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
 		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
 		
-		left = new Point(200, 120);
-		right = new Point(400, 120);
-		fVo = this.platform2D.createFloor(left, right, 30, true, true);
+		left = new Point(200, 110);
+		right = new Point(400, 110);
+		fVo = this.platform2D.createFloor(left, right, 30, true);
 		fVo.tag = 5;
 		this.shape.graphics.lineStyle(1, 0);
 		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
