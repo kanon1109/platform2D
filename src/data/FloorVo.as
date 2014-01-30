@@ -13,12 +13,10 @@ public class FloorVo
 	public var left:Point;
 	/**右边位置坐标*/
 	public var right:Point;
-	/**左边阻碍高度*/
-	public var lBlockHeight:Number;
-	/**右边阻碍高度*/
-	public var rBlockHeight:Number;
-	/**是否允许往下穿过*/
-	public var allowThrough:Boolean;
+	/**是否是实心的，false则允许往下穿过*/
+	public var solid:Boolean;
+	/**是否允许向上穿透*/
+	public var through:Boolean;
 	/**标记*/
 	public var tag:int;
 
