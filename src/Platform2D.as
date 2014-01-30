@@ -138,18 +138,20 @@ public class Platform2D
 			fVo = this.floorList[i];
 			if (fVo != bodyVo.floor)
 			{
-				if (bodyVo.vx > 0 && Math.abs(bodyVo.x - fVo.left.x) <= bodyVo.width * .5)
+				if (bodyVo.vx > 0 && 
+					bodyVo.x + bodyVo.width * .5 > fVo.left.x && 
+					bodyVo.prevX + bodyVo.width * .5 <= fVo.left.x)
 				{
 					//如果本身有地板且 地板高度小于判断地板的高度则忽略
 					if (bodyVo.floor && bodyVo.floor.right.y <= fVo.left.y) continue; 
 					if (fVo.left.y == fVo.leftThick.y) continue;
 					//如果物体的矩形范围在地板厚度之内的则阻碍地板
 					if (bodyVo.y > fVo.left.y && bodyVo.y - bodyVo.height < fVo.leftThick.y)
-					{
 						bodyVo.x = fVo.left.x - bodyVo.width * .5 - 1;
-					}
 				}
-				else if (bodyVo.vx < 0 && Math.abs(bodyVo.x - fVo.right.x) <= bodyVo.width * .5)
+				else if (bodyVo.vx < 0 && 
+						bodyVo.x - bodyVo.width * .5 < fVo.right.x && 
+						bodyVo.prevX - bodyVo.width * .5 >= fVo.right.x)
 				{
 					//如果本身有地板且 地板高度小于判断地板的高度则忽略
 					if (bodyVo.floor && bodyVo.floor.left.y <= fVo.right.y) continue;
