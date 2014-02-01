@@ -2,6 +2,7 @@
 {
 import data.BodyVo;
 import data.FloorVo;
+import flash.display.Shape;
 import flash.geom.Point;
 import utils.MathUtil;
 /**
@@ -61,7 +62,6 @@ public class Platform2D
 				//上一个帧在 地板y坐标上面，下一帧在地板y坐标下面 则表示是能够接触到的地板。
 				if (bodyVo.prevY <= prevY && bodyVo.y >= floorY)
 				{
-					bodyVo.vy = 0;
 					bodyVo.y = floorY;
 					bodyVo.floor = fVo;
 					break;
@@ -137,28 +137,6 @@ public class Platform2D
 			fVo = this.floorList[i];
 			if (fVo != bodyVo.floor)
 			{
-				if (bodyVo.vx > 0 && 
-					bodyVo.x + bodyVo.width * .5 > fVo.left.x && 
-					bodyVo.prevX + bodyVo.width * .5 <= fVo.left.x)
-				{
-					//如果本身有地板且 地板高度小于判断地板的高度则忽略
-					if (bodyVo.floor && bodyVo.floor.right.y <= fVo.left.y) continue; 
-					if (fVo.left.y == fVo.leftThick.y) continue;
-					//如果物体的矩形范围在地板厚度之内的则阻碍地板
-					if (bodyVo.y > fVo.left.y && bodyVo.y - bodyVo.height < fVo.leftThick.y)
-						bodyVo.x = fVo.left.x - bodyVo.width * .5 - 1;
-				}
-				else if (bodyVo.vx < 0 && 
-						bodyVo.x - bodyVo.width * .5 < fVo.right.x && 
-						bodyVo.prevX - bodyVo.width * .5 >= fVo.right.x)
-				{
-					//如果本身有地板且 地板高度小于判断地板的高度则忽略
-					if (bodyVo.floor && bodyVo.floor.left.y <= fVo.right.y) continue;
-					if (fVo.right.y == fVo.rightThick.y) continue;
-					//如果物体的矩形范围在地板厚度之内的则阻碍地板
-					if (bodyVo.y > fVo.right.y && bodyVo.y - bodyVo.height < fVo.rightThick.y)
-						bodyVo.x = fVo.right.x + bodyVo.width * .5 + 1;
-				}
 				//判断向上跳跃时的阻碍
 				if (bodyVo.vy < 0)
 				{
@@ -173,6 +151,23 @@ public class Platform2D
 						}
 					}
 				}
+				if (bodyVo.vx > 0 && 
+					!(bodyVo.y - bodyVo.height > fVo.leftThick.y || bodyVo.y < fVo.left.y))
+				{
+					//如果物体的矩形范围在地板厚度之内的则阻碍地板
+					if (fVo.left.y == fVo.leftThick.y) continue;
+					if (bodyVo.x + bodyVo.width * .5 > fVo.left.x && 
+						bodyVo.prevX + bodyVo.width * .5 <= fVo.left.x)
+						bodyVo.x = fVo.left.x - bodyVo.width * .5 - 1;
+				}
+				else if (bodyVo.vx < 0 && 
+						!(bodyVo.y - bodyVo.height > fVo.rightThick.y || bodyVo.y < fVo.right.y))
+				{
+					if (fVo.right.y == fVo.rightThick.y) continue;
+					if (bodyVo.x - bodyVo.width * .5 < fVo.right.x && 
+						bodyVo.prevX - bodyVo.width * .5 >= fVo.right.x)
+						bodyVo.x = fVo.right.x + bodyVo.width * .5 + 1;
+				}
 			}
 		}
 	}
@@ -185,12 +180,15 @@ public class Platform2D
 	 * @param	thick			厚度 以2端坐标最靠上的为起始点，
 	 * 							如果厚度值+最靠上的端点坐标后小于最靠下端点，
 	 *							则厚度会自动补充到最靠下坐标为止
+	 * @param	friction		摩擦系数(0-1); 数值越小摩擦影响越小
 	 * @param	solid			是否允许向下穿透
 	 * @param	through			是否允许向上穿透
 	 * @return	被创建的地板数据
 	 */
-	public function createFloor(left:Point, right:Point, thick:Number = 0, 
-								solid:Boolean = false, through:Boolean = false):FloorVo
+	public function createFloor(left:Point, right:Point, 
+								thick:Number = 0, friction:Number = 0,
+								solid:Boolean = false, 
+								through:Boolean = false):FloorVo
 	{
 		if (!this.floorList) return null;
 		var floorVo:FloorVo = new FloorVo();
@@ -234,6 +232,9 @@ public class Platform2D
 		}
 		floorVo.leftThick = leftThick;
 		floorVo.rightThick = rightThick;
+		if (friction < 0) friction = 0;
+		else if (friction > 1) friction = 1;
+		floorVo.friction = 1 - friction;
 		this.floorList.push(floorVo);
 		return floorVo;
 	}
@@ -343,33 +344,92 @@ public class Platform2D
 	 */
 	public function update():void
 	{
-		if (!this._bodyList) return;
-		var length:int = this._bodyList.length;
-		var bodyVo:BodyVo;
-		for (var i:int = 0; i < length; i += 1) 
+		var length:int;
+		var i:int;
+		if (this._bodyList)
 		{
-			bodyVo = this._bodyList[i];
-			bodyVo.prevX = bodyVo.x;
-			bodyVo.prevY = bodyVo.y;
-			bodyVo.x += bodyVo.vx;
-			if (!bodyVo.floor)
+			length = this._bodyList.length;
+			var bodyVo:BodyVo;
+			for (i = 0; i < length; i += 1) 
 			{
-				//如果没有地板则搜索，设置重力效果
-				bodyVo.vy += this.g;
-				bodyVo.y += bodyVo.vy;
-				this.seachFloor(bodyVo);
+				bodyVo = this._bodyList[i];
+				bodyVo.prevX = bodyVo.x;
+				bodyVo.prevY = bodyVo.y;
+				if (!bodyVo.floor)
+				{
+					//如果没有地板则搜索，设置重力效果
+					bodyVo.vy += this.g;
+					bodyVo.x += bodyVo.vx;
+					bodyVo.y += bodyVo.vy;
+					this.seachFloor(bodyVo);
+				}
+				else
+				{
+					//地板摩擦力
+					bodyVo.vx *= bodyVo.floor.friction;
+					bodyVo.x += bodyVo.vx;
+					//获取在斜面上移动时的y坐标
+					bodyVo.y = this.getFloorTopY(bodyVo.floor, bodyVo.x);
+					//判断是一部分否出界
+					if (this.isOutSide(bodyVo, bodyVo.floor)) this.linkFloor(bodyVo, bodyVo.floor);
+					//判断是否完全出界
+					if (this.isOutSide(bodyVo, bodyVo.floor, bodyVo.width * .5))
+						bodyVo.floor = null;
+				}
+				this.checkBodyBlock(bodyVo);
 			}
-			else
+		}
+	}
+	
+	/**
+	 * debug绘制
+	 * @param	shape		图形
+	 * @param	thickness	线条粗细
+	 * @param	color		线条颜色
+	 * @param	fillColor	填充颜色
+	 * @param	fillAlpha	填充透明度
+	 */
+	public function drawDebug(shape:Shape, thickness:Number = 1, color:Number = 0, 
+							fillColor:int = 0xFF3366, fillAlpha:Number = .5):void
+	{
+		if (!shape) return;
+		shape.graphics.clear();
+		var length:int;
+		var i:int;
+		if (this._bodyList)
+		{
+			var bVo:BodyVo;
+			length = this._bodyList.length;
+			for (i = 0; i < length; i += 1) 
 			{
-				//获取在斜面上移动时的y坐标
-				bodyVo.y = this.getFloorTopY(bodyVo.floor, bodyVo.x);
-				//判断是一部分否出界
-				if (this.isOutSide(bodyVo, bodyVo.floor)) this.linkFloor(bodyVo, bodyVo.floor);
-				//判断是否完全出界
-				if (this.isOutSide(bodyVo, bodyVo.floor, bodyVo.width * .5))
-					bodyVo.floor = null;
+				bVo = this._bodyList[i];
+				shape.graphics.lineStyle(thickness, color);
+				shape.graphics.beginFill(fillColor, fillAlpha);
+				shape.graphics.moveTo(bVo.x - bVo.width * .5, bVo.y - bVo.height);
+				shape.graphics.lineTo(bVo.x + bVo.width * .5, bVo.y - bVo.height);
+				shape.graphics.lineTo(bVo.x + bVo.width * .5, bVo.y);
+				shape.graphics.lineTo(bVo.x - bVo.width * .5, bVo.y);
+				shape.graphics.lineTo(bVo.x - bVo.width * .5, bVo.y - bVo.height);
+				shape.graphics.endFill();
 			}
-			this.checkBodyBlock(bodyVo);
+		}
+		
+		if (this.floorList)
+		{
+			var fVo:FloorVo;
+			length = this.floorList.length;
+			for (i = 0; i < length; i += 1) 
+			{
+				fVo = this.floorList[i];
+				shape.graphics.lineStyle(thickness, color);
+				shape.graphics.beginFill(fillColor, fillAlpha);
+				shape.graphics.moveTo(fVo.left.x, fVo.left.y);
+				shape.graphics.lineTo(fVo.right.x, fVo.right.y);
+				shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
+				shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
+				shape.graphics.lineTo(fVo.left.x, fVo.left.y);
+				shape.graphics.endFill();
+			}
 		}
 	}
 	

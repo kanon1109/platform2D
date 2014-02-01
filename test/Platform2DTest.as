@@ -9,6 +9,7 @@ import flash.events.Event;
 import flash.events.KeyboardEvent;
 import flash.geom.Point;
 import flash.ui.Keyboard;
+import flash.utils.getTimer;
 import net.hires.debug.Stats;
 
 /**
@@ -22,6 +23,7 @@ public class Platform2DTest extends Sprite
 	private var roleVo:BodyVo;
 	private var speed:Number = 0;
 	private var shape:Shape;
+	private var fVo6:FloorVo;
 	public function Platform2DTest() 
 	{
 		this.shape = new Shape();
@@ -31,96 +33,45 @@ public class Platform2DTest extends Sprite
 		
 		var left:Point = new Point(0, 120);
 		var right:Point = new Point(100, 120);
-		var fVo:FloorVo = this.platform2D.createFloor(left, right, 180, true);
+		var fVo:FloorVo = this.platform2D.createFloor(left, right, 180, 0, true);
 		fVo.tag = 0;
-		this.shape.graphics.lineStyle(1, 0);
-		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
-		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
-		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
-		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
-		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
 		
 		left = new Point(100, 160);
 		right = new Point(200, 260);
-		fVo = this.platform2D.createFloor(left, right, 30, true);
+		fVo = this.platform2D.createFloor(left, right, 30, .8, true);
 		fVo.tag = 1;
-		this.shape.graphics.lineStyle(1, 0);
-		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
-		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
-		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
-		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
-		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
 		
 		left = new Point(200, 260);
 		right = new Point(300, 260);
-		fVo = this.platform2D.createFloor(left, right, 0, true, true);
+		fVo = this.platform2D.createFloor(left, right, 30, 0, true, true);
 		fVo.tag = 2;
-		this.shape.graphics.lineStyle(1, 0);
-		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
-		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
-		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
-		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
-		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
 		
 		left = new Point(300, 200);
 		right = new Point(400, 260);
-		fVo = this.platform2D.createFloor(left, right, 30, true);
+		fVo = this.platform2D.createFloor(left, right, 30, 0, true);
 		fVo.tag = 3;
-		this.shape.graphics.lineStyle(1, 0);
-		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
-		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
-		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
-		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
-		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
 		
 		left = new Point(400, 220);
 		right = new Point(600, 220);
-		fVo = this.platform2D.createFloor(left, right, 30, true);
+		fVo = this.platform2D.createFloor(left, right, 30, 0, true);
 		fVo.tag = 4;
-		this.shape.graphics.lineStyle(1, 0);
-		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
-		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
-		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
-		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
-		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
 		
 		left = new Point(200, 110);
 		right = new Point(400, 110);
-		fVo = this.platform2D.createFloor(left, right, 30, true);
+		fVo = this.platform2D.createFloor(left, right, 30, 0, true);
 		fVo.tag = 5;
-		this.shape.graphics.lineStyle(1, 0);
-		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
-		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
-		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
-		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
-		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
+		//this.fVo6 = fVo;
+		//this.fVo6.vx = 2;
 		
 		left = new Point(200, 260);
 		right = new Point(300, 360);
-		fVo = this.platform2D.createFloor(left, right, 30, true);
+		fVo = this.platform2D.createFloor(left, right, 30, 0, true);
 		fVo.tag = 6;
-		this.shape.graphics.lineStyle(1, 0);
-		this.shape.graphics.moveTo(fVo.left.x, fVo.left.y);
-		this.shape.graphics.lineTo(fVo.right.x, fVo.right.y);
-		this.shape.graphics.lineTo(fVo.rightThick.x, fVo.rightThick.y);
-		this.shape.graphics.lineTo(fVo.leftThick.x, fVo.leftThick.y);
-		this.shape.graphics.lineTo(fVo.left.x, fVo.left.y);
 		
-		/*var floorList:Array = this.platform2D.createFloorChain(0, 300, 100, [0, 20, 0, 30, -40, 0, 60]);
-		var length:int = floorList.length;
-		for (var i:int = 0; i < length; i += 1)
-		{
-			fVo = floorList[i];
-			floor = new Floor();
-			floor.x = fVo.left.x;
-			floor.y = fVo.left.y;
-			floor.width = this.platform2D.getFloorDistance(fVo);
-			floor.rotation = this.platform2D.getRotation(fVo);
-			this.addChild(floor);
-		}*/
+		//this.platform2D.createFloorChain(0, 300, 100, [0, 20, 0, 30, -40, 0, 60]);
 		
-		this.role = new Role();
-		this.addChild(this.role);
+		//this.role = new Role();
+		//this.addChild(this.role);
 		this.roleVo = this.platform2D.createBody(150, 100, 36, 50, this.role);
 		
 		this.addChild(new Stats());
@@ -140,9 +91,16 @@ public class Platform2DTest extends Sprite
 	
 	private function loop(event:Event):void 
 	{
+		/*if (this.fVo6.left.x > 300 || 
+			this.fVo6.left.x < 100)
+			this.fVo6.vx *= -1;*/
+			
+		//var t:Number = getTimer();
 		this.roleVo.vx = this.speed;
 		this.platform2D.update();
-		this.render();
+		this.platform2D.drawDebug(this.shape);
+		//trace(getTimer() - t);
+		//this.render();
 	}
 	
 	/**
