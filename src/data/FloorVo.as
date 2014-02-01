@@ -8,7 +8,7 @@ import flash.geom.Point;
 public class FloorVo 
 {
 	/**斜率 为0 则表示平面 下坡为正，上坡为负*/
-	public var slope:Number;
+	public var slope:Number = 0;
 	/**左边位置坐标*/
 	public var left:Point;
 	/**右边位置坐标*/
@@ -23,5 +23,7 @@ public class FloorVo
 	public var leftThick:Point;
 	/**右边厚度坐标*/
 	public var rightThick:Point;
+	/**摩擦力*/
+	public var friction:Number = 0;
 }
 }
